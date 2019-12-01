@@ -28,32 +28,54 @@
 #CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 #OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
-Created on Thu Mar 21 21:16:37 2019
 
-@author: Vidya A Chhabria
-"""
-
-import pytest
-import numpy as np
-from T6_PSI_settings import T6_PSI_settings
-import json
-
-def test_load_json():
-    settings_obj = T6_PSI_settings.load_obj()
-    test_data = settings_obj.load_json('test/test.json')
-    exp_data ={}
-    exp_data['test'] ={}
-    exp_data['test']['1'] ={}
-    exp_data['test2'] ={}
-    exp_data['test2']['2'] ={}
-    exp_data['test']['1'] = 5
-    exp_data['test2']['2'] = 'test'
-    assert exp_data == test_data
+#!/usr/bin/tclsh
+#set OPDN_DIR "/home/sachin00/chhab011/OpeNPDN/"
+#set OPDN_OpenDB_BUILD_DIR "/home/sachin00/chhab011/OpenDB/build"
+#write_db "${OPDN_DIR}/work/PDN.db"
 
 
-#TODO chcek that the json has alll the data is it automatically checked given
-#that calling setings obj calls it.  
-#TODO check if the content s of the json seems resonable? 
+if {![info exists OPDN_DIR]} {
+    puts "OPDN_DIR variable not defined please set it before running OpeNPDN"
+    exit 1
+}
+if {![info exists OPDN_OpenDB_BUILD_DIR]} {
+    puts "OPDN_OpenDB_BUILD_DIR variable not defined please set it before running OpeNPDN"
+    exit 1
+}
+if {![file exists "${OPDN_DIR}/work/PDN.db"]} {
+    puts "OpenDB database for OpeNPDN not defined, please expor the db before running OpeNPDN"
+    exit 1
+}
 
+puts "capture work dir"
+set WD [pwd]
 
+cd ${OPDN_DIR}
+file mkdir work 
+
+pwd
+puts "change to directory and run STA"
+foreach x [get_cells *] {
+	set y [get_property $x full_name]
+	report_power -instance $y -digits 10 >> ./work/power_instance.rpt
+	}
+pwd
+
+set OPDN_ODB_LOC "${OPDN_OpenDB_BUILD_DIR}/src/swig/python/opendbpy.py"
+set OPDN_MODE "INFERENCE"
+
+puts "create settings"
+puts "${OPDN_ODB_LOC} "
+puts "${OPDN_MODE}"
+exec python3 src/T6_PSI_settings.py "${OPDN_ODB_LOC}" "${OPDN_MODE}"
+#if {![file isdirectory templates]} {
+    file mkdir templates
+    puts "create template"
+    exec python3 src/create_template.py
+#}
+puts "run current map"
+exec python3 src/current_map_generator.py work/power_instance.rpt "no_congestion"
+#exec [python3 src/cnn_inference.py]
+
+cd ${WD}

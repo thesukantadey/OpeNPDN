@@ -49,7 +49,7 @@ from T6_PSI_settings import T6_PSI_settings
 from eliminate_templates import load_template_list
 
 
-settings_obj = T6_PSI_settings()
+settings_obj = T6_PSI_settings.load_obj()
 #CLASSES = list(np.arange(N_CLASSES))
 CLASSES = load_template_list()
 N_CLASSES = len(CLASSES)

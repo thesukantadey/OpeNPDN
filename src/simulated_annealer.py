@@ -48,7 +48,7 @@ class simulated_annealer():
 
     def __init__(self, initial_state, T_init, T_final, alpha_temp,
                  num_moves_per_step, current_map):
-        self.settings_obj = T6_PSI_settings()
+        self.settings_obj = T6_PSI_settings.load_obj()
         self.eq_obj = construct_eqn()
         self.state = initial_state
         self.T_init = T_init

@@ -37,12 +37,23 @@ This file specifies the settings that are needed for OpeNPDN
 import json
 import re
 import copy
+import os
+import sys
 from collections import OrderedDict
 from pprint import pprint
+import pickle
+
+import importlib.util
+
 
 class T6_PSI_settings():
 
-    def __init__(self):
+    def __init__(self,db,ODB_LOC):
+        
+        self.ODB_loc = ODB_LOC
+        tech = db.getTech()
+        lef_unit = tech.getDbUnitsPerMicron() * 1e6 # divide number by this to
+        layers = tech.getLayers()
 
         self.work_dir = "./"
         self.temp_tcl_file =  self.work_dir + "input/PDN.cfg"
@@ -91,16 +102,43 @@ class T6_PSI_settings():
         self.NUM_TEMPLATES = len(stdcells_list)
         self.PDN_layers_ids = temp0.list_layers()
 
-        #print("%f %f %f"%(self.WIDTH_REGION,self.LENGTH_REGION,self.NUM_TEMPLATES))
-        #print(self.PDN_layers_ids)
-        self.NUM_LAYERS = self.template_data['property']['NUM_layers']
         self.NUM_REGIONS_X = self.template_data['property']['NUM_REGIONS_X']
         self.NUM_REGIONS_Y = self.template_data['property']['NUM_REGIONS_Y']
         self.NUM_REGIONS = self.NUM_REGIONS_X * self.NUM_REGIONS_Y
 
-        self.LAYERS = self.template_data['layers']
-        #pprint(self.LAYERS)
+        self.LAYERS = {}
+        self.TECH_LAYERS =[]
+        for layer in layers:
+            layer_num = layer.getRoutingLevel()
+            if layer_num < 1:
+                continue
+            layer_name = layer.getName()
+            self.TECH_LAYERS.append(layer_name)
+            self.LAYERS[layer_name] = {}
+            self.LAYERS[layer_name]['min_width'] = layer.getWidth() / lef_unit
+            self.LAYERS[layer_name]['via_res'] = self.template_data['layers'][layer_name]['via_res']
+            self.LAYERS[layer_name]["width"] = 0 # default value? layer.getWidth() ?
+            self.LAYERS[layer_name]['pitch'] = 0 # default value? layer.getPitch() ?
+            self.LAYERS[layer_name]['t_spacing'] = layer.getPitch() / lef_unit
+            self.LAYERS[layer_name]['res'] = layer.getResistance()
+            if layer.getDirection() == 'VERTICAL' or layer.getDirection() == 'V':
+                layer_dir = 'V'
+            elif layer.getDirection() == 'HORIZONTAL' or layer.getDirection() == 'H':
+                layer_dir = 'H'
+            else:
+                print("unknown layer direction")
+                layer_dir= 'H'
+            self.LAYERS[layer_name]['direction'] = layer_dir
+            
+        self.NUM_LAYERS = len(self.TECH_LAYERS)
         for layer_name in self.PDN_layers_ids:
+            found = 0
+            for layer in layers:
+                if layer.getName() == layer_name :
+                    found =1
+                    break
+            if found == 0:
+                print("Warning layer %s not found in tech layers"%layer_name)
             layer_obj = temp0.get_layer(layer_name) 
             width = layer_obj.get_width() 
             width *=1e-6
@@ -113,11 +151,7 @@ class T6_PSI_settings():
                 pitch *= 1e-6
                 pitches.append(pitch)
             self.LAYERS[layer_name]['pitch'] = pitches
-                
-        #pprint(self.LAYERS)
-
-        self.TECH_LAYERS = self.template_data['property']['TECH_layers']
-
+        #pprint(self.LAYERS)        
         self.VDD = self.template_data['property']['VDD']
         self.n_c4 = self.NUM_VDD * self.NUM_REGIONS_X * self.NUM_REGIONS_Y
         self.IR_DROP_LIMIT = self.template_data['property']['IR_DROP_LIMIT']
@@ -128,7 +162,12 @@ class T6_PSI_settings():
         with open(json_file) as f:
             json_data = json.load(f)
         return json_data
-
+    def load_obj():
+        file = open("./work/T6_PSI_settings.obj",'rb')
+        object_file = pickle.load(file)
+        file.close()
+        return object_file
+        
 class tcl_parser():
     def __init__(self,file_name):
         self.grid_stdcells= {}
@@ -307,6 +346,43 @@ class metal_layer():
 
         
 if __name__ == '__main__':
-    obj = tcl_parser('input/PDN.cfg')
-    obj = T6_PSI_settings()
+    if(len(sys.argv) != 3 and len(sys.argv) != 4):
+        print("ERROR: Settings requires either 3 or 4 input arguments")
+        sys.exit(-1)
+    odb_loc = sys.argv[1]  
+    mode = sys.argv[2]  
+    if mode == 'TRAIN':
+        if len(sys.argv) != 4:
+            print("ERROR: Training mode requires atleast 4 input arguments")
+        print("OpeNPDN Training Mode:")
+        lef_list = sys.argv[3]  
+        lef_files = lef_list.split();
+        for i in range(len(lef_files)):
+            if not os.path.isfile(lef_files[i]):
+                print("ERROR unable to find " + lef_files[i])
+                sys.exit(-1)
+        spec = importlib.util.spec_from_file_location("opendbpy",odb_loc )
+        odb = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(odb)
+        db = odb.dbDatabase.create()
+        #"/home/sachin00/chhab011/OpenDB/tests/data/gscl45nm.lef"
+        odb.odb_read_lef(db,lef_files)
+    elif mode == 'INFERENCE':
+        print("OpeNPDN Inference Mode:")
+        spec = importlib.util.spec_from_file_location("opendbpy",odb_loc )
+        odb = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(odb)
+        db = odb.dbDatabase.create()
+        db = odb.odb_import_db(db, "./work/PDN.db")
+        if db == None:
+            exit("Import DB Failed, check work/PDN.db")
+
+    else:  
+        print("MODE not recognize, possible inputs are \'TRAIN\' or \'INFERENCE\'")
+        exit(-1)
+
+    obj = T6_PSI_settings(db,odb_loc)
+    filehandler = open(obj.work_dir+"work/T6_PSI_settings.obj","wb")
+    pickle.dump(obj,filehandler)
+    filehandler.close()
     #obj.print_stdcells()

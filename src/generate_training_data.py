@@ -48,7 +48,7 @@ from eliminate_templates import load_template_list
 def main():
     # Read the json user input file and the current maps that need to be run
     # taken as an argument from the scripts
-    settings_obj = T6_PSI_settings()
+    settings_obj = T6_PSI_settings.load_obj()
     if len(sys.argv) == 3:
         map_start = int(sys.argv[1])
         num_maps = int(sys.argv[2])

@@ -52,7 +52,7 @@ import sys
 power_map_file = "./work/current_map_processed.csv"
 cong_map_file = "./output/congestion_map.csv"
 #congestion_map_file = "./work/congestion_processed.csv"
-settings_obj = T6_PSI_settings()
+settings_obj = T6_PSI_settings.load_obj()
 
 if (len(sys.argv)>1 and sys.argv[1] == "no_congestion"):
     congestion_enabled = 0 
@@ -172,7 +172,7 @@ def process_testcase():
 #    with tf.Graph().as_default():
 #        #with tf.name_scope('data'):
 #        maps = tf.pl
-    settings_obj = T6_PSI_settings()
+    settings_obj = T6_PSI_settings.load_obj()
     size_region_x = int(settings_obj.WIDTH_REGION * 1e6)
     size_region_y = int(settings_obj.LENGTH_REGION * 1e6)
     curr_testcase = np.zeros(

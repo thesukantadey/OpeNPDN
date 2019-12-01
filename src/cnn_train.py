@@ -48,7 +48,7 @@ from tqdm import tqdm
 import os
 import sys
 
-settings_obj = T6_PSI_settings()
+settings_obj = T6_PSI_settings.load_obj()
 N_EPOCHS = settings_obj.N_EPOCHS
 SKIP_STEP = 10 * 512 / cnn.BATCH_SIZE
 SAVE_STEP = 30 * 512 / cnn.BATCH_SIZE

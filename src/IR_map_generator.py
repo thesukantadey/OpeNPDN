@@ -99,7 +99,7 @@ def main():
 
 def generate_IR_map_regionwise(state,current_map):
     eq_obj = construct_eqn()
-    settings_obj = T6_PSI_settings()
+    settings_obj = T6_PSI_settings.load_obj()
     
     template_list = define_templates(settings_obj, generate_g=0)
     max_drop = settings_obj.VDD * np.ones(len(state))
@@ -157,7 +157,7 @@ def generate_IR_map_regionwise(state,current_map):
 
 def generate_IR_map(state,current_map):
     eq_obj = construct_eqn()
-    settings_obj = T6_PSI_settings()
+    settings_obj = T6_PSI_settings.load_obj()
     
     template_list = define_templates(settings_obj, generate_g=0)
     max_drop = settings_obj.VDD * np.ones(len(state))
@@ -205,7 +205,7 @@ def generate_IR_map(state,current_map):
 
 
 if __name__ == '__main__':
-    settings_obj = T6_PSI_settings()
+    settings_obj = T6_PSI_settings.load_obj()
     state = np.zeros((settings_obj.NUM_REGIONS_X,settings_obj.NUM_REGIONS_Y))
     with open(state_file, 'r') as infile:
         for line in infile:
