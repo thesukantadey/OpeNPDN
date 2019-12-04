@@ -35,6 +35,7 @@
 #write_db "${OPDN_DIR}/work/PDN.db"
 
 proc OpeNPDN {OPDN_DIR OPDN_OpenDB_BUILD_DIR} {
+file mkdir ${OPDN_DIR}/work
 write_db "${OPDN_DIR}/work/PDN.db"
 if {![info exists OPDN_DIR]} {
     puts "OPDN_DIR variable not defined please set it before running OpeNPDN"
@@ -45,12 +46,11 @@ if {![info exists OPDN_OpenDB_BUILD_DIR]} {
     exit 1
 }
 if {![file exists "${OPDN_DIR}/work/PDN.db"]} {
-    puts "OpenDB database for OpeNPDN not defined, please expor the db before running OpeNPDN"
+    puts "OpenDB database for OpeNPDN not defined, please export the db before running OpeNPDN"
     exit 1
 }
 
 set openpdn_congestion_enable "no_congestion"
-puts "capture work dir"
 set WD [pwd]
 
 cd ${OPDN_DIR}
