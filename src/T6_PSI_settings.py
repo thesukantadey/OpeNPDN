@@ -44,6 +44,7 @@ from pprint import pprint
 import pickle
 
 import importlib.util
+import numpy as np
 
 
 class T6_PSI_settings():
@@ -67,10 +68,10 @@ class T6_PSI_settings():
         self.map_dir = self.work_dir + "input/current_maps/"
         self.parallel_run_dir = self.work_dir + "work/parallel_runs/"
         self.CNN_data_dir =  self.work_dir + "output/"
-        self.checkpoint_dir = self.work_dir +'output/checkpoints/'
+        self.checkpoint_dir = self.work_dir +'checkpoints/checkpoint_w_cong/'
         self.checkpoint_file = 'power_grid_ckpt'
         self.normalization_file = 'normalization.json'
-        self.checkpoint_dir_wo_cong = self.work_dir +'output/checkpoints_wo_cong/'
+        self.checkpoint_dir_wo_cong = self.work_dir +'checkpoints/checkpoint_wo_cong/'
 
         self.template_data = self.load_json(self.temp_json_file)
         self.config = self.load_json(self.conf_json_file)
@@ -167,6 +168,11 @@ class T6_PSI_settings():
         object_file = pickle.load(file)
         file.close()
         return object_file
+    def load_template_list(self):
+        dirname = self.template_file
+        fname = dirname + "/refined_template_list.txt" 
+        return np.loadtxt(fname,dtype=int)
+
         
 class tcl_parser():
     def __init__(self,file_name):

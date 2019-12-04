@@ -54,20 +54,16 @@ set WD [pwd]
 cd ${OPDN_DIR}
 file mkdir work 
 
-pwd
 puts "change to directory and run STA"
 foreach x [get_cells *] {
 	set y [get_property $x full_name]
 	report_power -instance $y -digits 10 >> ./work/power_instance.rpt
 	}
-pwd
 
 set OPDN_ODB_LOC "${OPDN_OpenDB_BUILD_DIR}/src/swig/python/opendbpy.py"
 set OPDN_MODE "INFERENCE"
 
 puts "create settings"
-puts "${OPDN_ODB_LOC} "
-puts "${OPDN_MODE}"
 exec python3 src/T6_PSI_settings.py "${OPDN_ODB_LOC}" "${OPDN_MODE}"
 #if {![file isdirectory templates]} {
     file mkdir templates
@@ -76,6 +72,20 @@ exec python3 src/T6_PSI_settings.py "${OPDN_ODB_LOC}" "${OPDN_MODE}"
 #}
 puts "run current map"
 exec python3 src/current_map_generator.py work/power_instance.rpt "no_congestion"
-#exec [python3 src/cnn_inference.py]
+if {![file isdirectory checkpoints]} {
+    puts "OpeNPDN CNN checkpoints directory not found. Downloading default checkpoints"
+    exec git clone https://github.com/VidyaChhabria/OpeNDPN-Checkpoint-FreePDK45.git checkpoints
+    cd  "${OPDN_DIR}/checkpoints"
+    pwd
+    exec python3 scripts/build.py "no_congestion"
+    cd  ${OPDN_DIR}
+} elseif {![file exists checkpoints/checkpoint_wo_cong/checkpoint]} {
+    puts "OpeNPDN CNN checkpoint not found. Please run the training flow or download the default checkpoint"
+    exit 1
+} else { 
+    puts "Using stored OpeNPDN CNN checkpoint"
+}
+
+#exec python3 src/cnn_inference.py
 
 cd ${WD}

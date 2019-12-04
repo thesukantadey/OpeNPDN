@@ -41,7 +41,6 @@ import sys
 import numpy as np
 from create_template import define_templates
 from T6_PSI_settings import T6_PSI_settings
-from simulated_annealer import simulated_annealer
 from construct_eqn import construct_eqn
 from scipy import sparse as sparse_mat
 import matplotlib.image as img

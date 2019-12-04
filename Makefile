@@ -9,7 +9,8 @@ CONGEST_RPT= /home/sachin00/chhab011/aes/aes.congest.rpt
 #LEF_FILE=  /home/vchhabria/alpha-release/flow/results/nangate45/aes_cipher_top_bkp/aes.lef
 #CONGEST_RPT= /home/vchhabria/alpha-release/flow/results/nangate45/aes_cipher_top_bkp/aes.congest.rpt
 ODB_LOC = "/home/sachin00/chhab011/OpenDB/build/src/swig/python/opendbpy.py"
-MODE = 'INFERENCE'
+#MODE = 'INFERENCE'
+MODE = 'TRAIN'
 
 TERM_SHELL= $(shell echo "$$0")
 COMMAND =  $(shell source install.sh)
@@ -42,6 +43,7 @@ maps:
 
 templates: 
 	$(PC) ./src/T6_PSI_settings.py ${ODB_LOC} ${MODE} ${LEF_FILE} &&\
+	mkdir -p templates
 	$(PC) ./src/create_template.py 
 
 data:

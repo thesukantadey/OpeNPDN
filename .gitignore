@@ -13,3 +13,6 @@ PDN-opt
 !*_Nangate45.pwr.rpt
 *.congest.rpt
 !*_Nangate45.congest.rpt
+checkpoints
+templates
+input/current_maps
