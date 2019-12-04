@@ -41,19 +41,19 @@ Created on Wed May  8 22:10:01 2019
 
 import tensorflow as tf
 from cnn_input import cnn_input
-import cnn
+from cnn import cnn
 from T6_PSI_settings import T6_PSI_settings
 import time
 from tqdm import tqdm
 import os
 import sys
 
-        self.cnn_input_obj = cnn_input()
-        self.cnn_obj = cnn()
+cnn_input_obj = cnn_input()
+cnn_obj = cnn()
 settings_obj = T6_PSI_settings.load_obj()
 N_EPOCHS = settings_obj.N_EPOCHS
-SKIP_STEP = 10 * 512 / self.cnn_obj.BATCH_SIZE
-SAVE_STEP = 30 * 512 / self.cnn_obj.BATCH_SIZE
+SKIP_STEP = 10 * 512 / cnn_obj.BATCH_SIZE
+SAVE_STEP = 30 * 512 / cnn_obj.BATCH_SIZE
 save_model = True
 
 
@@ -73,16 +73,16 @@ def train(congestion_enabled):
     tf.__version__sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
     with tf.Graph().as_default():
         maps = tf.placeholder(tf.float32,
-                              [None, self.cnn_input_obj.MAP_SIZE_1d],
+                              [None, cnn_input_obj.MAP_SIZE_1d],
                               name="X_placeholder")
         if(congestion_enabled ==1):
             cong = tf.placeholder(tf.float32,
-                              [None, self.cnn_input_obj.MAP_SIZE_1d],
+                              [None, cnn_input_obj.MAP_SIZE_1d],
                               name="C_placeholder")
         else:
             cong = tf.constant(0)
         labels = tf.placeholder(tf.float32,
-                                [None, self.cnn_input_obj.N_CLASSES],
+                                [None, cnn_input_obj.N_CLASSES],
                                 name="Y_placeholder")
 
         global_step = tf.Variable(0,
@@ -91,10 +91,10 @@ def train(congestion_enabled):
                                   name='global_step')
 
         
-        logits = self.cnn_obj.inference(maps,cong,congestion_enabled)
-        loss = self.cnn_obj.loss(logits, labels)
-        optimizer = self.cnn_obj.train(loss, global_step)
-        accuracy = self.cnn_obj.accuracy(logits, labels)
+        logits = cnn_obj.inference(maps,cong,congestion_enabled)
+        loss = cnn_obj.loss(logits, labels)
+        optimizer = cnn_obj.train(loss, global_step)
+        accuracy = cnn_obj.accuracy(logits, labels)
 
         with tf.Session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -104,12 +104,12 @@ def train(congestion_enabled):
             start_read = time.time()
             (curr_train, curr_valid, curr_test, cong_train, cong_valid,
             cong_test,template_train, template_valid, template_test, num_train,
-            num_valid, num_test) = self.cnn_input_obj.load_and_preprocess_data(congestion_enabled)
-            n_batches_train = int(num_train / self.cnn_obj.BATCH_SIZE)
+            num_valid, num_test) = cnn_input_obj.load_and_preprocess_data(congestion_enabled)
+            n_batches_train = int(num_train / cnn_obj.BATCH_SIZE)
             total_loss = 0.0
             total_loss10 = 0.0
             trn_btch_str = 0
-            trn_btch_end = trn_btch_str + self.cnn_obj.BATCH_SIZE
+            trn_btch_end = trn_btch_str + cnn_obj.BATCH_SIZE
             epoch_num = 1
             start_train = time.time()
             correct_preds_train =0
@@ -146,7 +146,7 @@ def train(congestion_enabled):
                         print('Average loss at step {}: {:5.5f}'.format(
                             index + 1, total_loss / SKIP_STEP))
                         total_loss = 0.0
-                        train_acc = 100*correct_preds_train/(self.cnn_obj.BATCH_SIZE*SKIP_STEP)
+                        train_acc = 100*correct_preds_train/(cnn_obj.BATCH_SIZE*SKIP_STEP)
                         correct_preds_train =0
                         print("training Accuracy {0}".format(train_acc))
 
@@ -200,10 +200,10 @@ def train(congestion_enabled):
 
 def get_next_batch(trn_btch_str, trn_btch_end, epoch_num, num_train):
     trn_btch_str = trn_btch_end - 1
-    trn_btch_end = trn_btch_str + self.cnn_obj.BATCH_SIZE
+    trn_btch_end = trn_btch_str + cnn_obj.BATCH_SIZE
     if trn_btch_end > num_train:
         trn_btch_str = 0
-        trn_btch_end = trn_btch_str + self.cnn_obj.BATCH_SIZE
+        trn_btch_end = trn_btch_str + cnn_obj.BATCH_SIZE
         epoch_num += 1
         if epoch_num % 5 == 0:
             epoch_num += 5

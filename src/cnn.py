@@ -54,7 +54,7 @@ class cnn():
         self.NUM_EPOCHS_PER_DECAY = 5
         self.EPOCH_SIZE = 32
         self.LEARNING_RATE_DECAY_FACTOR = 0.1
-        self.BATCH_SIZE = 64
+        self.BATCH_SIZE = 16
         self.MOMEMTUM = 0.1
         self.DROPOUT = 0.75
     

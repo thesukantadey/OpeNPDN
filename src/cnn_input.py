@@ -77,19 +77,38 @@ class cnn_input():
         else:
            normalization_file = self.settings_obj.checkpoint_dir_wo_cong+self.settings_obj.normalization_file
         print("Preprocessing the input data")
-        curr_train = np.array(
-            pd.read_csv("output/CNN_train_currents.csv", header=None).values)
-        curr_valid = np.array(
-            pd.read_csv("output/CNN_val_currents.csv", header=None).values)
-        curr_test = np.array(
-            pd.read_csv("output/CNN_test_currents.csv", header=None).values)
         if(congestion_enabled == 1):
+            curr_train = np.array(
+                pd.read_csv("output/CNN_train_currents.csv", header=None).values)
+            curr_valid = np.array(
+                pd.read_csv("output/CNN_val_currents.csv", header=None).values)
+            curr_test = np.array(
+                pd.read_csv("output/CNN_test_currents.csv", header=None).values)
             pre_cong_train = np.array(
                 pd.read_csv("output/CNN_train_congest.csv", header=None).values)
             pre_cong_valid = np.array(
                 pd.read_csv("output/CNN_val_congest.csv", header=None).values)
             pre_cong_test = np.array(
                 pd.read_csv("output/CNN_test_congest.csv", header=None).values)
+            indices_train = pd.read_csv("output/CNN_train_template.csv",
+                                        header=None).values
+            indices_valid = pd.read_csv("output/CNN_val_template.csv",
+                                        header=None).values
+            indices_test = pd.read_csv("output/CNN_test_template.csv",
+                                       header=None).values
+        else:
+            curr_train = np.array(
+                pd.read_csv("output/CNN_wo_cong_train_currents.csv", header=None).values)
+            curr_valid = np.array(
+                pd.read_csv("output/CNN_wo_cong_val_currents.csv", header=None).values)
+            curr_test = np.array(
+                pd.read_csv("output/CNN_wo_cong_test_currents.csv", header=None).values)
+            indices_train = pd.read_csv("output/CNN_wo_cong_train_template.csv",
+                         header=None).values
+            indices_valid = pd.read_csv("output/CNN_wo_cong_val_template.csv",
+                         header=None).values
+            indices_test  = pd.read_csv("output/CNN_wo_cong_test_template.csv",
+                         header=None).values
     
         print("Preprocessing: data loaded")
         #normalizing paramters
@@ -171,12 +190,6 @@ class cnn_input():
             cong_test =0 
             cong_valid =0
     
-        indices_train = pd.read_csv("output/CNN_train_template.csv",
-                                    header=None).values
-        indices_valid = pd.read_csv("output/CNN_val_template.csv",
-                                    header=None).values
-        indices_test = pd.read_csv("output/CNN_test_template.csv",
-                                   header=None).values
         template_train = np.zeros((indices_train.size, self.N_CLASSES))
         template_valid = np.zeros((indices_valid.size, self.N_CLASSES))
         template_test = np.zeros((indices_test.size, self.N_CLASSES))

@@ -34,7 +34,8 @@
 #set OPDN_OpenDB_BUILD_DIR "/home/sachin00/chhab011/OpenDB/build"
 #write_db "${OPDN_DIR}/work/PDN.db"
 
-
+proc OpeNPDN {OPDN_DIR OPDN_OpenDB_BUILD_DIR} {
+write_db "${OPDN_DIR}/work/PDN.db"
 if {![info exists OPDN_DIR]} {
     puts "OPDN_DIR variable not defined please set it before running OpeNPDN"
     exit 1
@@ -48,6 +49,7 @@ if {![file exists "${OPDN_DIR}/work/PDN.db"]} {
     exit 1
 }
 
+set openpdn_congestion_enable "no_congestion"
 puts "capture work dir"
 set WD [pwd]
 
@@ -71,13 +73,13 @@ exec python3 src/T6_PSI_settings.py "${OPDN_ODB_LOC}" "${OPDN_MODE}"
     exec python3 src/create_template.py
 #}
 puts "run current map"
-exec python3 src/current_map_generator.py work/power_instance.rpt "no_congestion"
+exec python3 src/current_map_generator.py work/power_instance.rpt $openpdn_congestion_enable
 if {![file isdirectory checkpoints]} {
     puts "OpeNPDN CNN checkpoints directory not found. Downloading default checkpoints"
     exec git clone https://github.com/VidyaChhabria/OpeNDPN-Checkpoint-FreePDK45.git checkpoints
     cd  "${OPDN_DIR}/checkpoints"
     pwd
-    exec python3 scripts/build.py "no_congestion"
+    exec python3 scripts/build.py $openpdn_congestion_enable
     cd  ${OPDN_DIR}
 } elseif {![file exists checkpoints/checkpoint_wo_cong/checkpoint]} {
     puts "OpeNPDN CNN checkpoint not found. Please run the training flow or download the default checkpoint"
@@ -86,6 +88,9 @@ if {![file isdirectory checkpoints]} {
     puts "Using stored OpeNPDN CNN checkpoint"
 }
 
-#exec python3 src/cnn_inference.py
+exec python3 src/cnn_inference.py $openpdn_congestion_enable
+exec python3 src/IR_map_generator.py
+
 
 cd ${WD}
+}
