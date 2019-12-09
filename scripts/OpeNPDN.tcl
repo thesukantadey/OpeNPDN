@@ -34,29 +34,53 @@
 #set OPDN_OpenDB_BUILD_DIR "/home/sachin00/chhab011/OpenDB/build"
 #write_db "${OPDN_DIR}/work/PDN.db"
 
-proc OpeNPDN {OPDN_DIR OPDN_OpenDB_BUILD_DIR} {
+sta::define_cmd_args "openpdn" {
+    [-OPDN_DIR OPDN_DIR]\
+    [-OPDN_OpenDB_BUILD_DIR OPDN_OpenDB_BUILD_DIR]\
+    [-help]}
+
+proc openpdn { args } {
+    sta::parse_key_args "openpdn" args \
+    keys {-OPDN_DIR -OPDN_OpenDB_BUILD_DIR} \
+    flags {-help}
+
+    if [info exists flags(-help)] {
+        puts "Usage: openpdn -OPDN_DIR <OpeNPDN path> -OPDN_OpenDB_BUILD_DIR <OpeDB path>"
+        exit 0
+    }
+    set OPDN_DIR ""
+    if [info exists keys(-OPDN_DIR)] {
+      set OPDN_DIR $keys(-OPDN_DIR)
+    } else {
+      sta::sta_error "no -OPDN_DIR specified."
+    }
+    set OPDN_OpenDB_BUILD_DIR ""
+    if [info exists keys(-OPDN_OpenDB_BUILD_DIR)] {
+      set OPDN_OpenDB_BUILD_DIR $keys(-OPDN_OpenDB_BUILD_DIR)
+    } else {
+      sta::sta_error "no -OPDN_OpenDB_BUILD_DIR specified."
+    }
+#proc openpdn {OPDN_DIR OPDN_OpenDB_BUILD_DIR} {}
+#if {![info exists OPDN_DIR]} {
+#    puts "OPDN_DIR variable not defined please set it before running OpeNPDN"
+#    exit 1
+#}
+#if {![info exists OPDN_OpenDB_BUILD_DIR]} {
+#    puts "OPDN_OpenDB_BUILD_DIR variable not defined please set it before running OpeNPDN"
+#    exit 1
+#}
+#if {![file exists "${OPDN_DIR}/work/PDN.db"]} {
+#    puts "OpenDB database for OpeNPDN not defined, please export the db before running OpeNPDN"
+#    exit 1
+#}
 file mkdir ${OPDN_DIR}/work
 write_db "${OPDN_DIR}/work/PDN.db"
-if {![info exists OPDN_DIR]} {
-    puts "OPDN_DIR variable not defined please set it before running OpeNPDN"
-    exit 1
-}
-if {![info exists OPDN_OpenDB_BUILD_DIR]} {
-    puts "OPDN_OpenDB_BUILD_DIR variable not defined please set it before running OpeNPDN"
-    exit 1
-}
-if {![file exists "${OPDN_DIR}/work/PDN.db"]} {
-    puts "OpenDB database for OpeNPDN not defined, please export the db before running OpeNPDN"
-    exit 1
-}
 
 set openpdn_congestion_enable "no_congestion"
 set WD [pwd]
 
 cd ${OPDN_DIR}
-file mkdir work 
 
-puts "change to directory and run STA"
 foreach x [get_cells *] {
 	set y [get_property $x full_name]
 	report_power -instance $y -digits 10 >> ./work/power_instance.rpt
@@ -65,25 +89,22 @@ foreach x [get_cells *] {
 set OPDN_ODB_LOC "${OPDN_OpenDB_BUILD_DIR}/src/swig/python/opendbpy.py"
 set OPDN_MODE "INFERENCE"
 
-puts "create settings"
 exec python3 src/T6_PSI_settings.py "${OPDN_ODB_LOC}" "${OPDN_MODE}"
 #if {![file isdirectory templates]} {
     file mkdir templates
     puts "create template"
     exec python3 src/create_template.py
 #}
-puts "run current map"
 exec python3 src/current_map_generator.py work/power_instance.rpt $openpdn_congestion_enable
 if {![file isdirectory checkpoints]} {
     puts "OpeNPDN CNN checkpoints directory not found. Downloading default checkpoints"
-    exec git clone https://github.com/VidyaChhabria/OpeNDPN-Checkpoint-FreePDK45.git checkpoints
+    exec git clone --depth 1 https://github.com/VidyaChhabria/OpeNDPN-Checkpoint-FreePDK45.git checkpoints
     cd  "${OPDN_DIR}/checkpoints"
     pwd
     exec python3 scripts/build.py $openpdn_congestion_enable
     cd  ${OPDN_DIR}
 } elseif {![file exists checkpoints/checkpoint_wo_cong/checkpoint]} {
-    puts "OpeNPDN CNN checkpoint not found. Please run the training flow or download the default checkpoint"
-    exit 1
+     sta::sta_error "OpeNPDN CNN checkpoint not found. Please run the training flow or download the default checkpoint"
 } else { 
     puts "Using stored OpeNPDN CNN checkpoint"
 }

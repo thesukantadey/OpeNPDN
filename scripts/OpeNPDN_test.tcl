@@ -8,4 +8,4 @@ set OPDN_OpenDB_BUILD_DIR "/home/sachin00/chhab011/OpenDB/build/"
 
 #source "${OPDN_DIR}/scripts/OpeNPDN.tcl"
 
-OpeNPDN  ${OPDN_DIR} ${OPDN_OpenDB_BUILD_DIR}
+openpdn  -OPDN_DIR ${OPDN_DIR} -OPDN_OpenDB_BUILD_DIR ${OPDN_OpenDB_BUILD_DIR}
