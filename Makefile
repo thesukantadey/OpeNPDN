@@ -7,6 +7,7 @@ CONGEST_RPT= /home/sachin00/chhab011/aes/aes.congest.rpt
 ODB_LOC = "/home/sachin00/chhab011/OpenDB/build/src/swig/python/opendbpy.py"
 #MODE = 'INFERENCE'
 MODE = 'TRAIN'
+CHECKPOINT_DIR = "./checkpoints"
 
 TERM_SHELL= $(shell echo "$$0")
 COMMAND =  $(shell source install.sh)
@@ -31,14 +32,14 @@ work:
 	mkdir -p work/parallel_runs 
 
 settings:
-	$(PC) ./src/T6_PSI_settings.py ${ODB_LOC} ${MODE} ${LEF_FILE} 
+	$(PC) ./src/T6_PSI_settings.py ${ODB_LOC} ${CHECKPOINT_DIR} ${MODE} ${LEF_FILE} 
 
 maps:
 	mkdir -p input/current_maps &&\
 	$(PC) ./scripts/create_training_set.py 
 
 templates: 
-	$(PC) ./src/T6_PSI_settings.py ${ODB_LOC} ${MODE} ${LEF_FILE} &&\
+	$(PC) ./src/T6_PSI_settings.py ${ODB_LOC} ${CHECKPOINT_DIR} ${MODE} ${LEF_FILE} &&\
 	mkdir -p templates
 	$(PC) ./src/create_template.py 
 
@@ -94,7 +95,7 @@ all:
 	echo "****************************************************************" &&\
 	echo "************* Creating the defined templates *******************" &&\
 	echo "****************************************************************" &&\
-	$(PC) ./src/T6_PSI_settings.py ${ODB_LOC} ${MODE} ${LEF_FILE} &&\
+	$(PC) ./src/T6_PSI_settings.py ${ODB_LOC} ${CHECKPOINT_DIR} ${MODE} ${LEF_FILE} &&\
 	$(PC) ./src/create_template.py 
 	echo "****************************************************************" &&\
 	echo "************* Creating the maps for SA *************************" &&\
@@ -133,7 +134,7 @@ train:
 	mkdir -p templates &&\
 	mkdir -p work/parallel_runs &&\
 	mkdir -p input/current_maps &&\
-	$(PC) ./src/T6_PSI_settings.py ${ODB_LOC} ${MODE} ${LEF_FILE} &&\
+	$(PC) ./src/T6_PSI_settings.py ${ODB_LOC} ${CHECKPOINT_DIR} ${MODE} ${LEF_FILE} &&\
 	$(PC) ./scripts/create_training_set.py &&\
 	$(PC) ./src/create_template.py &&\
 	$(PC) ./scripts/run_batch_iterative.py ${CONGESTION_COMMAND} &&\

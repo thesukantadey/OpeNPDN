@@ -49,7 +49,7 @@ import numpy as np
 
 class T6_PSI_settings():
 
-    def __init__(self,db,ODB_LOC):
+    def __init__(self,db,ODB_LOC,checkpoint_dir):
         
         self.ODB_loc = ODB_LOC
         tech = db.getTech()
@@ -68,10 +68,10 @@ class T6_PSI_settings():
         self.map_dir = self.work_dir + "input/current_maps/"
         self.parallel_run_dir = self.work_dir + "work/parallel_runs/"
         self.CNN_data_dir =  self.work_dir + "output/"
-        self.checkpoint_dir = self.work_dir +'checkpoints/checkpoint_w_cong/'
+        self.checkpoint_dir = checkpoint_dir +'/checkpoint_w_cong/'
         self.checkpoint_file = 'power_grid_ckpt'
         self.normalization_file = 'normalization.json'
-        self.checkpoint_dir_wo_cong = self.work_dir +'checkpoints/checkpoint_wo_cong/'
+        self.checkpoint_dir_wo_cong = checkpoint_dir +'/checkpoint_wo_cong/'
 
         self.template_data = self.load_json(self.temp_json_file)
         self.config = self.load_json(self.conf_json_file)
@@ -352,16 +352,17 @@ class metal_layer():
 
         
 if __name__ == '__main__':
-    if(len(sys.argv) != 3 and len(sys.argv) != 4):
-        print("ERROR: Settings requires either 3 or 4 input arguments")
+    if(len(sys.argv) != 4 and len(sys.argv) != 5):
+        print("ERROR: Settings requires either 4 or 5 input arguments")
         sys.exit(-1)
     odb_loc = sys.argv[1]  
-    mode = sys.argv[2]  
+    checkpoint_dir = sys.argv[2]  
+    mode = sys.argv[3]  
     if mode == 'TRAIN':
-        if len(sys.argv) != 4:
+        if len(sys.argv) != 5:
             print("ERROR: Training mode requires atleast 4 input arguments")
         print("OpeNPDN Training Mode:")
-        lef_list = sys.argv[3]  
+        lef_list = sys.argv[4]  
         lef_files = lef_list.split();
         for i in range(len(lef_files)):
             if not os.path.isfile(lef_files[i]):
@@ -387,7 +388,7 @@ if __name__ == '__main__':
         print("MODE not recognize, possible inputs are \'TRAIN\' or \'INFERENCE\'")
         exit(-1)
 
-    obj = T6_PSI_settings(db,odb_loc)
+    obj = T6_PSI_settings(db,odb_loc,checkpoint_dir)
     filehandler = open(obj.work_dir+"work/T6_PSI_settings.obj","wb")
     pickle.dump(obj,filehandler)
     filehandler.close()

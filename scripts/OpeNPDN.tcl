@@ -36,31 +36,41 @@
 
 sta::define_cmd_args "openpdn" {
     [-OPDN_DIR OPDN_DIR]\
-    [-OPDN_OpenDB_BUILD_DIR OPDN_OpenDB_BUILD_DIR]\
+    [-opendbpy opendbpy]\
+    [-checkpoints checkpoints]\
     [-help]}
 
 proc openpdn { args } {
     sta::parse_key_args "openpdn" args \
-    keys {-OPDN_DIR -OPDN_OpenDB_BUILD_DIR} \
+    keys {-OPDN_DIR -opendbpy -checkpoints} \
     flags {-help}
 
     if [info exists flags(-help)] {
-        puts "Usage: openpdn -OPDN_DIR <OpeNPDN path> -OPDN_OpenDB_BUILD_DIR <OpeDB path>"
-        exit 0
+        puts "Usage: openpdn -OPDN_DIR <OpeNPDN path> -opendbpy <opendbpy.py path> -checkpoints <checkpoints dir path>"
+        return 0
     }
     set OPDN_DIR ""
     if [info exists keys(-OPDN_DIR)] {
-      set OPDN_DIR $keys(-OPDN_DIR)
+        set OPDN_DIR $keys(-OPDN_DIR)
     } else {
-      sta::sta_error "no -OPDN_DIR specified."
+        sta::sta_error "no -OPDN_DIR specified."
     }
-    set OPDN_OpenDB_BUILD_DIR ""
-    if [info exists keys(-OPDN_OpenDB_BUILD_DIR)] {
-      set OPDN_OpenDB_BUILD_DIR $keys(-OPDN_OpenDB_BUILD_DIR)
+    set opendbpy ""
+    if [info exists keys(-opendbpy)] {
+        set opendbpy $keys(-opendbpy)
     } else {
-      sta::sta_error "no -OPDN_OpenDB_BUILD_DIR specified."
+        sta::sta_error "no -opendbpy specified."
     }
-#proc openpdn {OPDN_DIR OPDN_OpenDB_BUILD_DIR} {}
+    set checkpoints ""
+    if [info exists keys(-checkpoints)] {
+        set checkpoints $keys(-checkpoints)
+    } else {
+        puts "If Nandgate version xx with region size XxY is being used you can retrive a sample using: \
+        \n\"git clone --depth 1 https://github.com/VidyaChhabria/OpeNDPN-Checkpoint-FreePDK45.git checkpoints\" \
+        \nAnd build it with \"python3 scripts/build.py\" "
+        sta::sta_error "no -checkpoints specified."
+    }
+#proc openpdn {OPDN_DIR opendbpy} {}
 #if {![info exists OPDN_DIR]} {
 #    puts "OPDN_DIR variable not defined please set it before running OpeNPDN"
 #    exit 1
@@ -86,24 +96,18 @@ foreach x [get_cells *] {
 	report_power -instance $y -digits 10 >> ./work/power_instance.rpt
 	}
 
-set OPDN_ODB_LOC "${OPDN_OpenDB_BUILD_DIR}/src/swig/python/opendbpy.py"
+set OPDN_ODB_LOC "${opendbpy}"
 set OPDN_MODE "INFERENCE"
 
-exec python3 src/T6_PSI_settings.py "${OPDN_ODB_LOC}" "${OPDN_MODE}"
-#if {![file isdirectory templates]} {
-    file mkdir templates
-    puts "create template"
-    exec python3 src/create_template.py
-#}
+exec python3 src/T6_PSI_settings.py "${OPDN_ODB_LOC}" "${checkpoints}" "${OPDN_MODE}"
+file mkdir templates
+exec python3 src/create_template.py
+
 exec python3 src/current_map_generator.py work/power_instance.rpt $openpdn_congestion_enable
-if {![file isdirectory checkpoints]} {
-    puts "OpeNPDN CNN checkpoints directory not found. Downloading default checkpoints"
-    exec git clone --depth 1 https://github.com/VidyaChhabria/OpeNDPN-Checkpoint-FreePDK45.git checkpoints
-    cd  "${OPDN_DIR}/checkpoints"
-    pwd
-    exec python3 scripts/build.py $openpdn_congestion_enable
-    cd  ${OPDN_DIR}
-} elseif {![file exists checkpoints/checkpoint_wo_cong/checkpoint]} {
+
+if {![file isdirectory ${checkpoints}]} {
+    sta::sta_error "OpeNPDN CNN checkpoints directory not found. Please specify a working checkpoints directory with -checkpoints"
+} elseif {![file exists "${checkpoints}/checkpoint_wo_cong/checkpoint"]} {
      sta::sta_error "OpeNPDN CNN checkpoint not found. Please run the training flow or download the default checkpoint"
 } else { 
     puts "Using stored OpeNPDN CNN checkpoint"
@@ -112,6 +116,8 @@ if {![file isdirectory checkpoints]} {
 exec python3 src/cnn_inference.py $openpdn_congestion_enable
 exec python3 src/IR_map_generator.py
 
+puts "Results stored in ${OPDN_DIR}/output"
+file delete -force -- ${OPDN_DIR}/work
 
 cd ${WD}
 }
