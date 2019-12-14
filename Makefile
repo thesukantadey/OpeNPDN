@@ -1,7 +1,7 @@
 SHELL = bash
 PC=python3
-DEF_FILE= /home/sachin00/chhab011/aes/aes.def
-POW_FILE= /home/sachin00/chhab011/aes/aes.pwr.rpt
+DEF_FILE= /home/sachin00/chhab011/tmp/OpenROAD/src/OpeNPDN/test/aes/aes.def
+POW_FILE= /home/sachin00/chhab011/tmp/OpenROAD/src/OpeNPDN/test/aes/aes.pwr.rpt
 LEF_FILE= /home/sachin00/chhab011/OpenDB/tests/data/Nangate45/NangateOpenCellLibrary.mod.lef
 CONGEST_RPT= /home/sachin00/chhab011/aes/aes.congest.rpt
 ODB_LOC = "/home/sachin00/chhab011/OpenDB/build/src/swig/python/opendbpy.py"

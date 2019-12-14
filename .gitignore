@@ -2,9 +2,7 @@ work
 *.sw*
 *.log*
 .nfs*
-*.def
 !*_Nangate45.def
-*.lef
 !Nangate45.lef
 *.pyc
 __pycache__
