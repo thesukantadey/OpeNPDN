@@ -117,7 +117,7 @@ proc list_delete { list delete } {
 
 # Record tests in /test
 record_tests {
-test_gcd
+test_aes
 }
 #  gcd_flow1
 
