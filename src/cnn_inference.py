@@ -53,16 +53,16 @@ class cnn_inference():
         #TODO take in the settings file
         self.cnn_input_obj = cnn_input()
         self.cnn_obj = cnn()
-
-        self.power_map_file = "./work/current_map_processed.csv"
+        self.power_map_file = sys.argv[1];
+        #"./work/current_map_processed.csv"
         self.cong_map_file = "./output/congestion_map.csv"
         #congestion_map_file = "./work/congestion_processed.csv"
         self.settings_obj = T6_PSI_settings.load_obj()
         
-        if (len(sys.argv)>1 and sys.argv[1] == "no_congestion"):
-            self.congestion_enabled = 0 
-        else: 
-            self.congestion_enabled = 1 
+        #if (len(sys.argv)>1 and sys.argv[1] == "no_congestion"):
+        self.congestion_enabled = 0 
+        #else: 
+        #    self.congestion_enabled = 1 
         
         
         #if self.congestion_enabled ==1:
@@ -117,7 +117,8 @@ class cnn_inference():
             pred = self.cnn_obj.prediction(logits)
             accuracy = self.cnn_obj.accuracy(logits, labels)
             with tf.Session() as sess:
-                ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
+                ckpt = tf.train.get_checkpoint_state(sys.argv[2])
+                print (sys.argv[2])
                 sess.run(tf.global_variables_initializer())
                 saver = tf.train.Saver()
                 if ckpt and ckpt.model_checkpoint_path:
@@ -223,6 +224,11 @@ class cnn_inference():
     
 
 if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Incorrect use of command. Correct usage is python3 \
+        src/cnn_inference.py <path to current map file> <path to trained cnn \
+        model>")
+
     cnn_inf_obj = cnn_inference()
     curr, cong,temp = cnn_inf_obj.process_testcase()
     cnn_inf_obj.eval_once(curr, cong, temp)
