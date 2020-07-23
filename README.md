@@ -1,3 +1,23 @@
+# Installation steps worked:
+```
+cd OpeNPDN
+git checkout standalone
+mkdir build
+cd build 
+cmake ..
+make
+cd ..
+make clean
+pip install -r requirements.txt       #Changed by Sukanta
+make test
+```
+
+Also, working with TF 1 in TF 2.2.0 environment. Do following modifications in each python file..
+```
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+```
+
 # OpeNPDN: Neural networks for automated synthesis of Power Delivery Networks (PDN)
 [![Standard](https://img.shields.io/badge/python-3.6-blue)](https://commons.wikimedia.org/wiki/File:Blue_Python_3.6_Shield_Badge.svg)
 [![Download](https://img.shields.io/badge/Download-here-red)](https://github.com/The-OpenROAD-Project/OpeNPDN/archive/master.zip)
